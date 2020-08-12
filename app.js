@@ -10,7 +10,6 @@ const connection = require("./config/database");
 const MongoStore = require("connect-mongo")(session);
 
 // Need to require the entire Passport config module so app.js knows about it
-require("./config/passport");
 
 /**
  * -------------- GENERAL SETUP ----------------
@@ -29,12 +28,27 @@ app.use(express.urlencoded({ extended: true }));
  * -------------- SESSION SETUP ----------------
  */
 
-// TODO
+const sessionStore = new MongoStore({
+  mongooseConnection: connection,
+  collection: "sessions",
+});
+
+app.use(
+  session({
+    secret: process.env.SECRET,
+    resave: false,
+    saveUninitialized: true,
+    store: sessionStore,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24, // Equals one day
+    },
+  })
+);
 
 /**
  * -------------- PASSPORT AUTHENTICATION ----------------
  */
-
+require("./config/passport");
 app.use(passport.initialize());
 app.use(passport.session());
 
